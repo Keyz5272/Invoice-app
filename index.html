@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Universal Invoice & Receipt Generator</title>
+  <title>Adepa Invoice & Receipt Generator</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Noto+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
@@ -239,7 +239,7 @@
     <aside class="panel">
       <div class="pill">Netlify + Cloudinary Ready</div>
       <h1>Invoice / Receipt Generator</h1>
-      <div class="sub">Responsive, modern, live calculations, PDF export, print, customer memory, WhatsApp share, and upload to Cloudinary via Netlify Function.</div>
+      <!-- <div class="sub">Responsive, modern, live calculations, PDF export, print, customer memory, WhatsApp share, and upload to Cloudinary via Netlify Function.</div> -->
 
       <div class="section">
         <h2>Document Setup</h2>
@@ -285,14 +285,14 @@
         <div class="grid">
           <div><label>Business Address</label><textarea id="businessAddress" placeholder="Full business address"></textarea></div>
           <div class="grid-2">
-            <div><label>Upload Business Logo</label><input id="logoUpload" type="file" accept="image/*" /></div>
+            <div><label>Upload Business Logo</label><input id="logoUpload" type="file" accept="images/*" /></div>
             <div><label>Upload Stamp / Seal</label><input id="stampUpload" type="file" accept="image/*" /></div>
           </div>
         </div>
       </div>
 
       <div class="section">
-        <h2>Customer Details (saved in browser)</h2>
+        <h2>Customer Details ()</h2>
         <div class="grid-2">
           <div><label>Customer Name</label><input id="customerName" placeholder="Client name" /></div>
           <div><label>Customer Email</label><input id="customerEmail" type="email" placeholder="client@email.com" /></div>
@@ -357,7 +357,7 @@
         </div>
         <div class="share-box">
           <label>Netlify Upload Endpoint (auto-filled on Netlify)</label>
-          <input id="netlifyEndpoint" placeholder="https://your-site.netlify.app/.netlify/functions/upload-pdf" />
+          <input id="netlifyEndpoint" placeholder="https://adepaunimart.netlify.app/.netlify/functions/upload-pdf" />
           <div class="muted">This auto-fills when deployed to Netlify.</div>
         </div>
         <div class="share-box">
@@ -382,7 +382,7 @@
                 <div id="pvBusinessName" style="font-size: 24px; font-weight: 800;">Your Company Ltd</div>
                 <div class="doc-meta">
                   <div id="pvBusinessAddress">Business address</div>
-                  <div id="pvBusinessContact">hello@company.com • +000 000 0000</div>
+                  <div id="pvBusinessContact">hello@company.com • +000 000 0000 </div>
                   <div id="pvBusinessTax">TIN/VAT: -</div>
                 </div>
               </div>
@@ -430,7 +430,7 @@
           <div class="totals">
             <div class="total-row"><span>Subtotal</span><strong id="pvSubtotal">0.00</strong></div>
             <div class="total-row"><span>Discount</span><strong id="pvDiscount">0.00</strong></div>
-            <div class="total-row"><span>Tax</span><strong id="pvTax">0.00</strong></div>
+            <div class="total-row"><span>VAT</span><strong id="pvTax">0.00</strong></div>
             <div class="total-row"><span>Paid</span><strong id="pvPaid">0.00</strong></div>
             <div class="total-row grand"><span>Balance / Total</span><strong id="pvGrand">0.00</strong></div>
           </div>
@@ -438,7 +438,7 @@
           <div class="doc-footer">
             <div>
               <strong>Notes / Terms</strong>
-              <div class="signature-note" id="pvNotes">Thank you for your business.</div>
+              <div class="signature-note" id="pvNotes">Thank you for your patronage!.</div>
             </div>
             <div style="text-align:center;">
               <div class="stamp-box" id="stampPreview">STAMP</div>
@@ -607,39 +607,76 @@
       pdf.save(filename);
     }
 
+    // async function uploadToNetlify() {
+    //   try {
+    //     const endpoint = el('netlifyEndpoint').value.trim();
+    //     if (!endpoint) return alert('Netlify endpoint not found.');
+
+    //     if (!lastPdfBlob) await generatePdfBlob();
+
+    //     const fileName = `${el('docType').value}-${(el('docNumber').value || 'document').replace(/\s+/g, '-')}.pdf`;
+
+    //     const formData = new FormData();
+    //     formData.append('file', lastPdfBlob, fileName);
+    //     formData.append('docNumber', el('docNumber').value || 'document');
+    //     formData.append('docType', el('docType').value);
+
+    //     const res = await fetch(endpoint, {
+    //       method: 'POST',
+    //       body: formData
+    //     });
+
+    //     const data = await res.json();
+
+    //     if (!res.ok || !data.url) {
+    //       throw new Error(data.error || 'Upload failed');
+    //     }
+
+    //     el('generatedLink').value = data.url;
+    //     updatePreview();
+    //     alert('PDF uploaded successfully. Link generated.');
+    //   } catch (err) {
+    //     console.error(err);
+    //     alert('Upload failed: ' + err.message);
+    //   }
+    // }
     async function uploadToNetlify() {
-      try {
-        const endpoint = el('netlifyEndpoint').value.trim();
-        if (!endpoint) return alert('Netlify endpoint not found.');
+  try {
+    const endpoint = el('netlifyEndpoint').value.trim();
+    if (!endpoint) return alert('Netlify endpoint not found.');
 
-        if (!lastPdfBlob) await generatePdfBlob();
+    if (!lastPdfBlob) await generatePdfBlob();
 
-        const fileName = `${el('docType').value}-${(el('docNumber').value || 'document').replace(/\s+/g, '-')}.pdf`;
+    const fileName = `${el('docType').value}-${(el('docNumber').value || 'document').replace(/\s+/g, '-')}.pdf`;
 
-        const formData = new FormData();
-        formData.append('file', lastPdfBlob, fileName);
-        formData.append('docNumber', el('docNumber').value || 'document');
-        formData.append('docType', el('docType').value);
+    const formData = new FormData();
+    formData.append('file', lastPdfBlob, fileName);
+    formData.append('docNumber', el('docNumber').value || 'document');
+    formData.append('docType', el('docType').value);
 
-        const res = await fetch(endpoint, {
-          method: 'POST',
-          body: formData
-        });
+    const res = await fetch(endpoint, { method: 'POST', body: formData });
 
-        const data = await res.json();
-
-        if (!res.ok || !data.url) {
-          throw new Error(data.error || 'Upload failed');
-        }
-
-        el('generatedLink').value = data.url;
-        updatePreview();
-        alert('PDF uploaded successfully. Link generated.');
-      } catch (err) {
-        console.error(err);
-        alert('Upload failed: ' + err.message);
-      }
+    const text = await res.text();
+    let data;
+    try {
+      data = JSON.parse(text);
+    } catch (e) {
+      console.error("Non-JSON response from server:", text);
+      throw new Error("Server returned invalid response. Check Netlify function endpoint.");
     }
+
+    if (!res.ok || !data.url) {
+      throw new Error(data.error || "Upload failed");
+    }
+
+    el('generatedLink').value = data.url;
+    updatePreview();
+    alert('PDF uploaded successfully. Link generated.');
+  } catch (err) {
+    console.error(err);
+    alert('Upload failed: ' + err.message);
+  }
+}
 
     function sendWhatsApp() {
       const phone = (el('customerPhone').value || '').replace(/[^\d]/g, '');
