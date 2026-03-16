@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -771,3 +772,778 @@
   </script>
 </body>
 </html>
+=======
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Adepa Invoice & Receipt Generator</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
+  <style>
+    :root {
+      --bg: #0b1020;
+      --panel: #121a30;
+      --card: #ffffff;
+      --text: #0f172a;
+      --muted: #64748b;
+      --border: #dbe2ea;
+      --brand: #2563eb;
+      --brand-2: #1d4ed8;
+      --success: #16a34a;
+      --danger: #dc2626;
+      --shadow: 0 10px 30px rgba(2, 8, 23, 0.18);
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: 'Noto Sans', Arial, Helvetica, sans-serif;
+      background: linear-gradient(180deg, #0b1020 0%, #111827 100%);
+      color: #fff;
+    }
+    .app {
+      display: grid;
+      grid-template-columns: minmax(340px, 470px) 1fr;
+      min-height: 100vh;
+      gap: 20px;
+      padding: 20px;
+    }
+    .panel {
+      background: rgba(18, 26, 48, 0.96);
+      border: 1px solid rgba(255,255,255,0.08);
+      border-radius: 24px;
+      padding: 20px;
+      box-shadow: var(--shadow);
+      overflow: auto;
+    }
+    .preview-wrap {
+      background: rgba(255,255,255,0.04);
+      border: 1px solid rgba(255,255,255,0.08);
+      border-radius: 24px;
+      padding: 18px;
+      overflow: auto;
+    }
+    h1 { margin: 0 0 6px; font-size: 1.6rem; font-weight: 800; }
+    .sub { color: #cbd5e1; font-size: 0.92rem; margin-bottom: 18px; }
+    .grid { display: grid; gap: 12px; }
+    .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+    .grid-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
+    .section {
+      margin: 18px 0;
+      padding: 16px;
+      background: rgba(255,255,255,0.03);
+      border: 1px solid rgba(255,255,255,0.06);
+      border-radius: 18px;
+    }
+    .section h2 {
+      font-size: 1rem;
+      margin: 0 0 12px;
+      color: #e2e8f0;
+    }
+    label {
+      display: block;
+      font-size: 0.82rem;
+      font-weight: 600;
+      margin-bottom: 6px;
+      color: #cbd5e1;
+    }
+    input, select, textarea, button {
+      width: 100%;
+      font: inherit;
+      border-radius: 12px;
+      border: 1px solid rgba(255,255,255,0.12);
+      outline: none;
+    }
+    input, select, textarea {
+      padding: 11px 12px;
+      background: rgba(255,255,255,0.06);
+      color: #fff;
+    }
+    select option { color: #111827; }
+    textarea { min-height: 80px; resize: vertical; }
+    .btns { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; }
+    .btns-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
+    button {
+      border: none;
+      padding: 12px 14px;
+      cursor: pointer;
+      font-weight: 700;
+      transition: 0.2s ease;
+    }
+    .btn-primary { background: var(--brand); color: #fff; }
+    .btn-primary:hover { background: var(--brand-2); }
+    .btn-secondary { background: rgba(255,255,255,0.08); color: #fff; }
+    .btn-success { background: var(--success); color: #fff; }
+    .btn-danger { background: var(--danger); color: #fff; }
+    .muted { color: #94a3b8; font-size: 0.8rem; }
+    .item-row {
+      display: grid;
+      grid-template-columns: 2fr 0.8fr 1fr 1fr auto;
+      gap: 8px;
+      margin-bottom: 8px;
+      align-items: end;
+    }
+    .item-row .remove-item {
+      width: 44px;
+      height: 44px;
+      padding: 0;
+      border-radius: 12px;
+      background: #7f1d1d;
+      color: white;
+    }
+
+    #documentPreview {
+      width: 210mm;
+      min-height: 297mm;
+      margin: 0 auto;
+      background: #fff;
+      color: var(--text);
+      border-radius: 10px;
+      box-shadow: 0 10px 35px rgba(0,0,0,0.16);
+      padding: 18mm 16mm;
+      position: relative;
+      overflow: hidden;
+    }
+    .doc-watermark {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 72px;
+      font-weight: 800;
+      color: rgba(37,99,235,0.05);
+      pointer-events: none;
+      transform: rotate(-25deg);
+      letter-spacing: 6px;
+      z-index: 0;
+    }
+    .doc-content { position: relative; z-index: 1; }
+    .doc-header {
+      display: grid;
+      grid-template-columns: 1fr auto;
+      gap: 20px;
+      align-items: start;
+      border-bottom: 2px solid #e2e8f0;
+      padding-bottom: 14px;
+      margin-bottom: 16px;
+    }
+    .brand-wrap { display: flex; gap: 14px; align-items: center; }
+    .logo-box {
+      width: 72px; height: 72px; border: 1px dashed #cbd5e1; border-radius: 14px;
+      display: flex; align-items: center; justify-content: center; overflow: hidden; background: #f8fafc;
+      color: #64748b; font-size: 12px;
+    }
+    .logo-box img, .stamp-box img { width: 100%; height: 100%; object-fit: contain; }
+    .stamp-box {
+      width: 100px; height: 100px; border: 1px dashed #cbd5e1; border-radius: 50%;
+      overflow: hidden; background: #f8fafc; display:flex; align-items:center; justify-content:center; color:#64748b; font-size:12px;
+    }
+    .doc-title { text-align: right; }
+    .doc-title h2 { margin: 0; font-size: 28px; color: var(--brand); }
+    .doc-meta { font-size: 13px; color: var(--muted); line-height: 1.6; }
+    .party-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+      margin-bottom: 16px;
+    }
+    .box {
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 12px;
+      background: #fff;
+    }
+    .box h3 { margin: 0 0 8px; font-size: 14px; color: #334155; }
+    .box p { margin: 3px 0; font-size: 13px; }
+    table { width: 100%; border-collapse: collapse; margin: 12px 0 16px; font-size: 13px; }
+    th, td { border: 1px solid var(--border); padding: 10px; text-align: left; }
+    th { background: #eff6ff; color: #1e3a8a; }
+    .totals {
+      margin-left: auto;
+      width: min(100%, 320px);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      overflow: hidden;
+    }
+    .total-row {
+      display: flex; justify-content: space-between; padding: 10px 12px; border-bottom: 1px solid var(--border);
+      font-size: 13px;
+    }
+    .total-row:last-child { border-bottom: none; }
+    .grand { background: #eff6ff; font-weight: 800; font-size: 15px; }
+    .doc-footer {
+      display: grid; grid-template-columns: 1fr auto; gap: 16px; margin-top: 22px; align-items: end;
+      border-top: 2px solid #e2e8f0; padding-top: 14px;
+    }
+    .signature-note { font-size: 12px; color: var(--muted); }
+    .share-box { margin-top: 12px; }
+    .pill {
+      display: inline-block;
+      padding: 6px 10px;
+      border-radius: 999px;
+      background: rgba(37,99,235,0.12);
+      color: #dbeafe;
+      font-size: 0.78rem;
+      margin-bottom: 8px;
+    }
+    @media (max-width: 1200px) {
+      .app { grid-template-columns: 1fr; }
+      #documentPreview { width: 100%; min-height: auto; }
+    }
+    @media (max-width: 720px) {
+      .grid-2, .grid-3, .btns, .btns-3, .party-grid, .item-row { grid-template-columns: 1fr; }
+      .doc-header, .doc-footer { grid-template-columns: 1fr; }
+      .doc-title { text-align: left; }
+    }
+    @media print {
+      body { background: #fff; }
+      .panel { display: none !important; }
+      .app { display: block; padding: 0; }
+      .preview-wrap { border: none; padding: 0; background: #fff; }
+      #documentPreview { width: 100%; box-shadow: none; border-radius: 0; }
+    }
+  </style>
+</head>
+<body>
+  <div class="app">
+    <aside class="panel">
+      <div class="pill">Netlify + Cloudinary Ready</div>
+      <h1>Invoice / Receipt Generator</h1>
+      <!-- <div class="sub">Responsive, modern, live calculations, PDF export, print, customer memory, WhatsApp share, and upload to Cloudinary via Netlify Function.</div> -->
+
+      <div class="section">
+        <h2>Document Setup</h2>
+        <div class="grid-2">
+          <div>
+            <label>Document Type</label>
+            <select id="docType">
+              <option value="INVOICE">INVOICE</option>
+              <option value="RECEIPT">RECEIPT</option>
+            </select>
+          </div>
+          <div>
+            <label>Currency</label>
+            <select id="currency"></select>
+          </div>
+          <div>
+            <label>Document Number</label>
+            <input id="docNumber" placeholder="INV-2026-001" />
+          </div>
+          <div>
+            <label>Issue Date</label>
+            <input id="issueDate" type="date" />
+          </div>
+          <div>
+            <label>Due Date (Invoice)</label>
+            <input id="dueDate" type="date" />
+          </div>
+          <div>
+            <label>Country</label>
+            <select id="country"></select>
+          </div>
+        </div>
+      </div>
+
+      <div class="section">
+        <h2>Business Information</h2>
+        <div class="grid-2">
+          <div><label>Business Name</label><input id="businessName" placeholder="Your Company Ltd" /></div>
+          <div><label>Business Email</label><input id="businessEmail" type="email" placeholder="hello@company.com" /></div>
+          <div><label>Business Phone</label><input id="businessPhone" placeholder="+233 ..." /></div>
+          <div><label>Tax / Registration ID</label><input id="businessTax" placeholder="TIN / VAT / Reg No" /></div>
+        </div>
+        <div class="grid">
+          <div><label>Business Address</label><textarea id="businessAddress" placeholder="Full business address"></textarea></div>
+          <div class="grid-2">
+            <div><label>Upload Business Logo</label><input id="logoUpload" type="file" accept="images/*" /></div>
+            <div><label>Upload Stamp / Seal</label><input id="stampUpload" type="file" accept="image/*" /></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="section">
+        <h2>Customer Details ()</h2>
+        <div class="grid-2">
+          <div><label>Customer Name</label><input id="customerName" placeholder="Client name" /></div>
+          <div><label>Customer Email</label><input id="customerEmail" type="email" placeholder="client@email.com" /></div>
+          <div><label>Customer Phone / WhatsApp</label><input id="customerPhone" placeholder="233xxxxxxxxx" /></div>
+          <div><label>Customer Country</label><select id="customerCountry"></select></div>
+        </div>
+        <div><label>Customer Address</label><textarea id="customerAddress" placeholder="Customer address"></textarea></div>
+      </div>
+
+      <div class="section">
+        <h2>Payment</h2>
+        <div class="grid-2">
+          <div>
+            <label>Payment Method</label>
+            <select id="paymentMethod"></select>
+          </div>
+          <div>
+            <label>Payment Status</label>
+            <select id="paymentStatus">
+              <option>Pending</option>
+              <option>Paid</option>
+              <option>Partially Paid</option>
+              <option>Refunded</option>
+            </select>
+          </div>
+        </div>
+        <div class="grid">
+          <div><label>Payment Details / Wallet / Card / MoMo</label><textarea id="paymentDetails" placeholder="e.g. USDT TRC20: TX... | Visa **** 1234 | MTN MoMo +233..."></textarea></div>
+        </div>
+      </div>
+
+      <div class="section">
+        <h2>Items / Services</h2>
+        <div id="itemsContainer"></div>
+        <div class="btns-3">
+          <button class="btn-secondary" id="addItemBtn" type="button">+ Add Item</button>
+          <button class="btn-secondary" id="saveCustomerBtn" type="button">Save Customer</button>
+          <button class="btn-secondary" id="loadCustomerBtn" type="button">Load Saved</button>
+        </div>
+      </div>
+
+      <div class="section">
+        <h2>Taxes & Discounts</h2>
+        <div class="grid-3">
+          <div><label>Tax %</label><input id="taxPercent" type="number" min="0" step="0.01" value="0" /></div>
+          <div><label>Discount %</label><input id="discountPercent" type="number" min="0" step="0.01" value="0" /></div>
+          <div><label>Amount Paid</label><input id="amountPaid" type="number" min="0" step="0.01" value="0" /></div>
+        </div>
+        <div><label>Notes / Terms</label><textarea id="notes" placeholder="Thank you for your business."></textarea></div>
+      </div>
+
+      <div class="section">
+        <h2>Actions</h2>
+        <div class="btns-3">
+          <button class="btn-primary" id="downloadPdfBtn" type="button">Generate PDF</button>
+          <button class="btn-success" id="printBtn" type="button">Print</button>
+          <button class="btn-secondary" id="copyTextBtn" type="button">Copy Text</button>
+        </div>
+        <div class="btns" style="margin-top:10px;">
+          <button class="btn-secondary" id="uploadNetlifyBtn" type="button">Upload PDF</button>
+          <button class="btn-primary" id="whatsappBtn" type="button">Send via WhatsApp</button>
+        </div>
+        <div class="share-box">
+          <label>Netlify Upload Endpoint (auto-filled on Netlify)</label>
+          <input id="netlifyEndpoint" placeholder="https://adepaunimart.netlify.app/.netlify/functions/upload-pdf" />
+          <div class="muted">This auto-fills when deployed to Netlify.</div>
+        </div>
+        <div class="share-box">
+          <label>Generated PDF Link</label>
+          <input id="generatedLink" placeholder="Generated link will appear here" />
+        </div>
+        <div class="share-box">
+          <label>Message Preview (editable)</label>
+          <textarea id="messageBox" placeholder="Invoice/Receipt message for client"></textarea>
+        </div>
+      </div>
+    </aside>
+
+    <main class="preview-wrap">
+      <div id="documentPreview">
+        <div class="doc-watermark" id="watermarkText">INVOICE</div>
+        <div class="doc-content">
+          <div class="doc-header">
+            <div class="brand-wrap">
+              <div class="logo-box" id="logoPreview">LOGO</div>
+              <div>
+                <div id="pvBusinessName" style="font-size: 24px; font-weight: 800;">Your Company Ltd</div>
+                <div class="doc-meta">
+                  <div id="pvBusinessAddress">Business address</div>
+                  <div id="pvBusinessContact">hello@company.com • +000 000 0000 </div>
+                  <div id="pvBusinessTax">TIN/VAT: -</div>
+                </div>
+              </div>
+            </div>
+            <div class="doc-title">
+              <h2 id="pvDocType">INVOICE</h2>
+              <div class="doc-meta">
+                <div><strong>No:</strong> <span id="pvDocNumber">INV-2026-001</span></div>
+                <div><strong>Issued:</strong> <span id="pvIssueDate">-</span></div>
+                <div><strong>Due:</strong> <span id="pvDueDate">-</span></div>
+                <div><strong>Country:</strong> <span id="pvCountry">-</span></div>
+              </div>
+            </div>
+          </div>
+
+          <div class="party-grid">
+            <div class="box">
+              <h3>Bill To</h3>
+              <p><strong id="pvCustomerName">Client Name</strong></p>
+              <p id="pvCustomerEmail">client@email.com</p>
+              <p id="pvCustomerPhone">+000 000 0000</p>
+              <p id="pvCustomerCountry">Country</p>
+              <p id="pvCustomerAddress">Customer address</p>
+            </div>
+            <div class="box">
+              <h3>Payment</h3>
+              <p><strong>Method:</strong> <span id="pvPaymentMethod">Cash</span></p>
+              <p><strong>Status:</strong> <span id="pvPaymentStatus">Pending</span></p>
+              <p><strong>Details:</strong> <span id="pvPaymentDetails">-</span></p>
+            </div>
+          </div>
+
+          <table>
+            <thead>
+              <tr>
+                <th>Description</th>
+                <th>Qty</th>
+                <th>Unit Price</th>
+                <th>Total</th>
+              </tr>
+            </thead>
+            <tbody id="pvItems"></tbody>
+          </table>
+
+          <div class="totals">
+            <div class="total-row"><span>Subtotal</span><strong id="pvSubtotal">0.00</strong></div>
+            <div class="total-row"><span>Discount</span><strong id="pvDiscount">0.00</strong></div>
+            <div class="total-row"><span>VAT</span><strong id="pvTax">0.00</strong></div>
+            <div class="total-row"><span>Paid</span><strong id="pvPaid">0.00</strong></div>
+            <div class="total-row grand"><span>Balance / Total</span><strong id="pvGrand">0.00</strong></div>
+          </div>
+
+          <div class="doc-footer">
+            <div>
+              <strong>Notes / Terms</strong>
+              <div class="signature-note" id="pvNotes">Thank you for your patronage!.</div>
+            </div>
+            <div style="text-align:center;">
+              <div class="stamp-box" id="stampPreview">STAMP</div>
+              <div class="signature-note">Authorized Stamp / Seal</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <script>
+    const countryList = [
+      'Afghanistan','Albania','Algeria','Andorra','Angola','Antigua and Barbuda','Argentina','Armenia','Australia','Austria','Azerbaijan','Bahamas','Bahrain','Bangladesh','Barbados','Belarus','Belgium','Belize','Benin','Bhutan','Bolivia','Bosnia and Herzegovina','Botswana','Brazil','Brunei','Bulgaria','Burkina Faso','Burundi','Cabo Verde','Cambodia','Cameroon','Canada','Central African Republic','Chad','Chile','China','Colombia','Comoros','Congo','Costa Rica','Croatia','Cuba','Cyprus','Czech Republic','Democratic Republic of the Congo','Denmark','Djibouti','Dominica','Dominican Republic','Ecuador','Egypt','El Salvador','Equatorial Guinea','Eritrea','Estonia','Eswatini','Ethiopia','Fiji','Finland','France','Gabon','Gambia','Georgia','Germany','Ghana','Greece','Grenada','Guatemala','Guinea','Guinea-Bissau','Guyana','Haiti','Honduras','Hungary','Iceland','India','Indonesia','Iran','Iraq','Ireland','Israel','Italy','Jamaica','Japan','Jordan','Kazakhstan','Kenya','Kiribati','Kuwait','Kyrgyzstan','Laos','Latvia','Lebanon','Lesotho','Liberia','Libya','Liechtenstein','Lithuania','Luxembourg','Madagascar','Malawi','Malaysia','Maldives','Mali','Malta','Marshall Islands','Mauritania','Mauritius','Mexico','Micronesia','Moldova','Monaco','Mongolia','Montenegro','Morocco','Mozambique','Myanmar','Namibia','Nauru','Nepal','Netherlands','New Zealand','Nicaragua','Niger','Nigeria','North Korea','North Macedonia','Norway','Oman','Pakistan','Palau','Panama','Papua New Guinea','Paraguay','Peru','Philippines','Poland','Portugal','Qatar','Romania','Russia','Rwanda','Saint Kitts and Nevis','Saint Lucia','Saint Vincent and the Grenadines','Samoa','San Marino','Sao Tome and Principe','Saudi Arabia','Senegal','Serbia','Seychelles','Sierra Leone','Singapore','Slovakia','Slovenia','Solomon Islands','Somalia','South Africa','South Korea','South Sudan','Spain','Sri Lanka','Sudan','Suriname','Sweden','Switzerland','Syria','Taiwan','Tajikistan','Tanzania','Thailand','Timor-Leste','Togo','Tonga','Trinidad and Tobago','Tunisia','Turkey','Turkmenistan','Tuvalu','Uganda','Ukraine','United Arab Emirates','United Kingdom','United States','Uruguay','Uzbekistan','Vanuatu','Venezuela','Vietnam','Yemen','Zambia','Zimbabwe'
+    ];
+
+    const currencies = [
+      'USD - US Dollar','EUR - Euro','GBP - British Pound','GHS - Ghana Cedi','NGN - Nigerian Naira','KES - Kenyan Shilling','ZAR - South African Rand','CAD - Canadian Dollar','AUD - Australian Dollar','JPY - Japanese Yen','CNY - Chinese Yuan','INR - Indian Rupee','AED - UAE Dirham','SAR - Saudi Riyal','CHF - Swiss Franc','SEK - Swedish Krona','NOK - Norwegian Krone','DKK - Danish Krone','NZD - New Zealand Dollar','BRL - Brazilian Real','MXN - Mexican Peso','RUB - Russian Ruble','TRY - Turkish Lira','SGD - Singapore Dollar','HKD - Hong Kong Dollar','PLN - Polish Zloty','THB - Thai Baht','MYR - Malaysian Ringgit','IDR - Indonesian Rupiah','PHP - Philippine Peso','PKR - Pakistani Rupee'
+    ];
+
+    const paymentMethods = [
+      'Cash','Bank Transfer','Cheque','Card - Visa','Card - Mastercard','Card - American Express','Card - Discover','Card - Verve',
+      'Mobile Money - MTN MoMo','Mobile Money - Vodafone Cash','Mobile Money - AirtelTigo Money','Mobile Money - Orange Money','Mobile Money - M-Pesa','Mobile Money - Airtel Money','Mobile Money - Tigo Pesa',
+      'Crypto - BTC (Bitcoin)','Crypto - ETH (Ethereum)','Crypto - USDT (Tether)','Crypto - USDC','Crypto - BNB','Crypto - SOL','Crypto - XRP','Crypto - LTC','Crypto - DOGE','Crypto - TRX','Crypto - TON','Crypto - ADA','Crypto - XLM','Crypto - MATIC / POL'
+    ];
+
+    const el = id => document.getElementById(id);
+    let lastPdfBlob = null;
+
+    function populateSelect(id, list, selected = '') {
+      const select = el(id);
+      select.innerHTML = list.map(v => `<option value="${v}">${v}</option>`).join('');
+      if (selected && list.includes(selected)) select.value = selected;
+    }
+
+    function formatMoney(amount) {
+      const currencyCode = (el('currency').value || 'USD - US Dollar').split(' - ')[0];
+      try {
+        return new Intl.NumberFormat(undefined, { style: 'currency', currency: currencyCode, maximumFractionDigits: 2 }).format(Number(amount || 0));
+      } catch {
+        return `${currencyCode} ${Number(amount || 0).toFixed(2)}`;
+      }
+    }
+
+    function createItemRow(data = { description: '', qty: 1, price: 0 }) {
+      const row = document.createElement('div');
+      row.className = 'item-row';
+      row.innerHTML = `
+        <div><label>Description</label><input class="item-desc" value="${data.description}" placeholder="Service / Product" /></div>
+        <div><label>Qty</label><input class="item-qty" type="number" min="0" step="0.01" value="${data.qty}" /></div>
+        <div><label>Price</label><input class="item-price" type="number" min="0" step="0.01" value="${data.price}" /></div>
+        <div><label>Total</label><input class="item-total" type="text" value="0.00" readonly /></div>
+        <button type="button" class="remove-item">✕</button>
+      `;
+      row.querySelectorAll('input').forEach(i => i.addEventListener('input', updatePreview));
+      row.querySelector('.remove-item').addEventListener('click', () => { row.remove(); updatePreview(); });
+      el('itemsContainer').appendChild(row);
+      updatePreview();
+    }
+
+    function fileToDataUrl(file, callback) {
+      if (!file) return callback('');
+      const reader = new FileReader();
+      reader.onload = e => callback(e.target.result);
+      reader.readAsDataURL(file);
+    }
+
+    function setImagePreview(inputId, previewId, label) {
+      const file = el(inputId).files[0];
+      fileToDataUrl(file, dataUrl => {
+        localStorage.setItem(inputId + '_data', dataUrl || '');
+        el(previewId).innerHTML = dataUrl ? `<img src="${dataUrl}" alt="${label}" />` : label;
+      });
+    }
+
+    function updatePreview() {
+      const docType = el('docType').value;
+      el('pvDocType').textContent = docType;
+      el('watermarkText').textContent = docType;
+      el('pvDocNumber').textContent = el('docNumber').value || (docType === 'INVOICE' ? 'INV-2026-001' : 'RCT-2026-001');
+      el('pvIssueDate').textContent = el('issueDate').value || '-';
+      el('pvDueDate').textContent = docType === 'RECEIPT' ? 'N/A' : (el('dueDate').value || '-');
+      el('pvCountry').textContent = el('country').value || '-';
+
+      el('pvBusinessName').textContent = el('businessName').value || 'Your Company Ltd';
+      el('pvBusinessAddress').textContent = el('businessAddress').value || 'Business address';
+      el('pvBusinessContact').textContent = `${el('businessEmail').value || 'hello@company.com'} • ${el('businessPhone').value || '+000 000 0000'}`;
+      el('pvBusinessTax').textContent = `TIN/VAT: ${el('businessTax').value || '-'}`;
+
+      el('pvCustomerName').textContent = el('customerName').value || 'Client Name';
+      el('pvCustomerEmail').textContent = el('customerEmail').value || 'client@email.com';
+      el('pvCustomerPhone').textContent = el('customerPhone').value || '+000 000 0000';
+      el('pvCustomerCountry').textContent = el('customerCountry').value || 'Country';
+      el('pvCustomerAddress').textContent = el('customerAddress').value || 'Customer address';
+
+      el('pvPaymentMethod').textContent = el('paymentMethod').value || 'Cash';
+      el('pvPaymentStatus').textContent = el('paymentStatus').value || 'Pending';
+      el('pvPaymentDetails').textContent = el('paymentDetails').value || '-';
+      el('pvNotes').textContent = el('notes').value || 'Thank you for your business.';
+
+      const rows = [...document.querySelectorAll('.item-row')];
+      let subtotal = 0;
+      const itemsHtml = rows.map(row => {
+        const desc = row.querySelector('.item-desc').value || 'Item';
+        const qty = parseFloat(row.querySelector('.item-qty').value || 0);
+        const price = parseFloat(row.querySelector('.item-price').value || 0);
+        const total = qty * price;
+        row.querySelector('.item-total').value = total.toFixed(2);
+        subtotal += total;
+        return `<tr><td>${desc}</td><td>${qty}</td><td>${formatMoney(price)}</td><td>${formatMoney(total)}</td></tr>`;
+      }).join('') || `<tr><td>Sample Item</td><td>1</td><td>${formatMoney(0)}</td><td>${formatMoney(0)}</td></tr>`;
+
+      el('pvItems').innerHTML = itemsHtml;
+
+      const discountPercent = parseFloat(el('discountPercent').value || 0);
+      const taxPercent = parseFloat(el('taxPercent').value || 0);
+      const amountPaid = parseFloat(el('amountPaid').value || 0);
+      const discount = subtotal * (discountPercent / 100);
+      const taxable = subtotal - discount;
+      const tax = taxable * (taxPercent / 100);
+      const grand = taxable + tax;
+      const balance = Math.max(grand - amountPaid, 0);
+
+      el('pvSubtotal').textContent = formatMoney(subtotal);
+      el('pvDiscount').textContent = `-${formatMoney(discount)}`;
+      el('pvTax').textContent = formatMoney(tax);
+      el('pvPaid').textContent = formatMoney(amountPaid);
+      el('pvGrand').textContent = docType === 'RECEIPT' ? formatMoney(grand) : formatMoney(balance);
+
+      const generated = el('generatedLink').value.trim();
+      const message = `${docType} ${el('pvDocNumber').textContent} for ${el('pvCustomerName').textContent}. Total: ${formatMoney(grand)}. ${generated ? 'Download PDF: ' + generated : 'PDF link will appear after upload.'}`;
+      if (!el('messageBox').dataset.userEdited) el('messageBox').value = message;
+    }
+
+    async function generatePdfBlob() {
+      const { jsPDF } = window.jspdf;
+      const preview = el('documentPreview');
+      const canvas = await html2canvas(preview, { scale: 2, useCORS: true, backgroundColor: '#ffffff' });
+      const imgData = canvas.toDataURL('image/png');
+      const pdf = new jsPDF('p', 'mm', 'a4');
+      const pageWidth = 210;
+      const pageHeight = 297;
+      const imgWidth = pageWidth;
+      const imgHeight = (canvas.height * imgWidth) / canvas.width;
+      let heightLeft = imgHeight;
+      let position = 0;
+
+      pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
+      heightLeft -= pageHeight;
+
+      while (heightLeft > 0) {
+        position = heightLeft - imgHeight;
+        pdf.addPage();
+        pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
+        heightLeft -= pageHeight;
+      }
+
+      const blob = pdf.output('blob');
+      lastPdfBlob = blob;
+      return { pdf, blob };
+    }
+
+    async function downloadPdf() {
+      const { pdf } = await generatePdfBlob();
+      const filename = `${el('docType').value}-${(el('docNumber').value || 'document').replace(/\s+/g, '-')}.pdf`;
+      pdf.save(filename);
+    }
+
+    // async function uploadToNetlify() {
+    //   try {
+    //     const endpoint = el('netlifyEndpoint').value.trim();
+    //     if (!endpoint) return alert('Netlify endpoint not found.');
+
+    //     if (!lastPdfBlob) await generatePdfBlob();
+
+    //     const fileName = `${el('docType').value}-${(el('docNumber').value || 'document').replace(/\s+/g, '-')}.pdf`;
+
+    //     const formData = new FormData();
+    //     formData.append('file', lastPdfBlob, fileName);
+    //     formData.append('docNumber', el('docNumber').value || 'document');
+    //     formData.append('docType', el('docType').value);
+
+    //     const res = await fetch(endpoint, {
+    //       method: 'POST',
+    //       body: formData
+    //     });
+
+    //     const data = await res.json();
+
+    //     if (!res.ok || !data.url) {
+    //       throw new Error(data.error || 'Upload failed');
+    //     }
+
+    //     el('generatedLink').value = data.url;
+    //     updatePreview();
+    //     alert('PDF uploaded successfully. Link generated.');
+    //   } catch (err) {
+    //     console.error(err);
+    //     alert('Upload failed: ' + err.message);
+    //   }
+    // }
+    async function uploadToNetlify() {
+  try {
+    const endpoint = el('netlifyEndpoint').value.trim();
+    if (!endpoint) return alert('Netlify endpoint not found.');
+
+    if (!lastPdfBlob) await generatePdfBlob();
+
+    const fileName = `${el('docType').value}-${(el('docNumber').value || 'document').replace(/\s+/g, '-')}.pdf`;
+
+    const formData = new FormData();
+    formData.append('file', lastPdfBlob, fileName);
+    formData.append('docNumber', el('docNumber').value || 'document');
+    formData.append('docType', el('docType').value);
+
+    const res = await fetch(endpoint, { method: 'POST', body: formData });
+
+    const text = await res.text();
+    let data;
+    try {
+      data = JSON.parse(text);
+    } catch (e) {
+      console.error("Non-JSON response from server:", text);
+      throw new Error("Server returned invalid response. Check Netlify function endpoint.");
+    }
+
+    if (!res.ok || !data.url) {
+      throw new Error(data.error || "Upload failed");
+    }
+
+    el('generatedLink').value = data.url;
+    updatePreview();
+    alert('PDF uploaded successfully. Link generated.');
+  } catch (err) {
+    console.error(err);
+    alert('Upload failed: ' + err.message);
+  }
+}
+
+    function sendWhatsApp() {
+      const phone = (el('customerPhone').value || '').replace(/[^\d]/g, '');
+      const text = encodeURIComponent(el('messageBox').value || 'Please see your invoice/receipt.');
+      const url = `https://wa.me/${phone}?text=${text}`;
+      window.open(url, '_blank');
+    }
+
+    function copyMessage() {
+      navigator.clipboard.writeText(el('messageBox').value || '').then(() => alert('Message copied!'));
+    }
+
+    function saveCustomer() {
+      const customer = {
+        customerName: el('customerName').value,
+        customerEmail: el('customerEmail').value,
+        customerPhone: el('customerPhone').value,
+        customerCountry: el('customerCountry').value,
+        customerAddress: el('customerAddress').value
+      };
+      localStorage.setItem('savedCustomer', JSON.stringify(customer));
+      alert('Customer saved in browser.');
+    }
+
+    function loadCustomer() {
+      const raw = localStorage.getItem('savedCustomer');
+      if (!raw) return alert('No saved customer found.');
+      const customer = JSON.parse(raw);
+      Object.keys(customer).forEach(k => { if (el(k)) el(k).value = customer[k]; });
+      updatePreview();
+      alert('Saved customer loaded.');
+    }
+
+    function loadAssetsFromStorage() {
+      const logo = localStorage.getItem('logoUpload_data');
+      const stamp = localStorage.getItem('stampUpload_data');
+      el('logoPreview').innerHTML = logo ? `<img src="${logo}" alt="Logo" />` : 'LOGO';
+      el('stampPreview').innerHTML = stamp ? `<img src="${stamp}" alt="Stamp" />` : 'STAMP';
+    }
+
+    function attachListeners() {
+      document.querySelectorAll('input, select, textarea').forEach(node => {
+        node.addEventListener('input', updatePreview);
+        node.addEventListener('change', updatePreview);
+      });
+      el('messageBox').addEventListener('input', () => el('messageBox').dataset.userEdited = '1');
+      el('addItemBtn').addEventListener('click', () => createItemRow());
+      el('downloadPdfBtn').addEventListener('click', downloadPdf);
+      el('printBtn').addEventListener('click', () => window.print());
+      el('copyTextBtn').addEventListener('click', copyMessage);
+      el('saveCustomerBtn').addEventListener('click', saveCustomer);
+      el('loadCustomerBtn').addEventListener('click', loadCustomer);
+      el('uploadNetlifyBtn').addEventListener('click', uploadToNetlify);
+      el('whatsappBtn').addEventListener('click', sendWhatsApp);
+      el('logoUpload').addEventListener('change', () => setImagePreview('logoUpload', 'logoPreview', 'LOGO'));
+      el('stampUpload').addEventListener('change', () => setImagePreview('stampUpload', 'stampPreview', 'STAMP'));
+    }
+
+    function initDefaults() {
+      populateSelect('country', countryList, 'Ghana');
+      populateSelect('customerCountry', countryList, 'Ghana');
+      populateSelect('currency', currencies, 'GHS - Ghana Cedi');
+      populateSelect('paymentMethod', paymentMethods, 'Mobile Money - MTN MoMo');
+
+      const today = new Date();
+      const next7 = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000);
+      el('issueDate').value = today.toISOString().split('T')[0];
+      el('dueDate').value = next7.toISOString().split('T')[0];
+      el('docNumber').value = `INV-${today.getFullYear()}-001`;
+
+      // Auto Netlify endpoint when deployed
+      el('netlifyEndpoint').value = `${window.location.origin}/.netlify/functions/upload-pdf`;
+
+      createItemRow({ description: 'Website Design Service', qty: 1, price: 1500 });
+      createItemRow({ description: 'Hosting / Maintenance', qty: 1, price: 300 });
+
+      loadAssetsFromStorage();
+
+      const saved = localStorage.getItem('savedCustomer');
+      if (saved) {
+        try {
+          const customer = JSON.parse(saved);
+          Object.keys(customer).forEach(k => { if (el(k)) el(k).value = customer[k]; });
+        } catch {}
+      }
+
+      updatePreview();
+    }
+
+    attachListeners();
+    initDefaults();
+  </script>
+</body>
+</html>
+>>>>>>> 51b039338b3d754838ff66cf6885d4e5d1b113b5

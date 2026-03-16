@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 {
   "name": "invoice-receipt-generator",
   "version": "1.0.0",
@@ -8,3 +9,15 @@
     "node-fetch": "^2.7.0"
   }
 }
+=======
+{
+  "name": "invoice-receipt-generator",
+  "version": "1.0.0",
+  "private": true,
+  "dependencies": {
+    "busboy": "^1.6.0",
+    "form-data": "^4.0.0",
+    "node-fetch": "^2.7.0"
+  }
+}
+>>>>>>> 51b039338b3d754838ff66cf6885d4e5d1b113b5

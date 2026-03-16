@@ -1,6 +1,15 @@
+<<<<<<< HEAD
 [build]
   functions = "netlify/functions"
   publish = "."
 
 [functions]
   node_bundler = "esbuild"
+=======
+[build]
+  functions = "netlify/functions"
+  publish = "."
+
+[functions]
+  node_bundler = "esbuild"
+>>>>>>> 51b039338b3d754838ff66cf6885d4e5d1b113b5
