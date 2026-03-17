@@ -358,7 +358,7 @@
         </div>
         <div class="share-box">
           <label>Netlify Upload Endpoint (auto-filled on Netlify)</label>
-          <input id="netlifyEndpoint" placeholder="https://adepaunimart.netlify.app/.netlify/functions/upload-pdf" />
+          <input id="netlifyEndpoint" placeholder="https://69b89784c1c929c808392457--adepa-invoice.netlify.app" />
           <div class="muted">This auto-fills when deployed to Netlify.</div>
         </div>
         <div class="share-box">
@@ -641,42 +641,79 @@
     //     alert('Upload failed: ' + err.message);
     //   }
     // }
-    async function uploadToNetlify() {
+//     async function uploadToNetlify() {
+//   try {
+//     const endpoint = el('netlifyEndpoint').value.trim();
+//     if (!endpoint) return alert('Netlify endpoint not found.');
+
+//     if (!lastPdfBlob) await generatePdfBlob();
+
+//     const fileName = `${el('docType').value}-${(el('docNumber').value || 'document').replace(/\s+/g, '-')}.pdf`;
+
+//     const formData = new FormData();
+//     formData.append('file', lastPdfBlob, fileName);
+//     formData.append('docNumber', el('docNumber').value || 'document');
+//     formData.append('docType', el('docType').value);
+
+//     const res = await fetch(endpoint, { method: 'POST', body: formData });
+
+//     const text = await res.text();
+//     let data;
+//     try {
+//       data = JSON.parse(text);
+//     } catch (e) {
+//       console.error("Non-JSON response from server:", text);
+//       throw new Error("Server returned invalid response. Check Netlify function endpoint.");
+//     }
+
+//     if (!res.ok || !data.url) {
+//       throw new Error(data.error || "Upload failed");
+//     }
+
+//     el('generatedLink').value = data.url;
+//     updatePreview();
+//     alert('PDF uploaded successfully. Link generated.');
+//   } catch (err) {
+//     console.error(err);
+//     alert('Upload failed: ' + err.message);
+//   }
+// }
+async function uploadPdfToNetlify(pdfBlob, fileName, docType, docNumber) {
+  const endpointInput = document.getElementById("netlifyEndpoint")?.value.trim();
+  const baseUrl = endpointInput || window.location.origin;
+  const uploadUrl = `${baseUrl.replace(/\/$/, "")}/.netlify/functions/upload-pdf`;
+
+  const formData = new FormData();
+  formData.append("file", pdfBlob, fileName || "document.pdf");
+  formData.append("docType", docType || "");
+  formData.append("docNumber", docNumber || "");
+
+  const response = await fetch(uploadUrl, {
+    method: "POST",
+    body: formData
+  });
+
+  const rawText = await response.text();
+
+  let result;
   try {
-    const endpoint = el('netlifyEndpoint').value.trim();
-    if (!endpoint) return alert('Netlify endpoint not found.');
-
-    if (!lastPdfBlob) await generatePdfBlob();
-
-    const fileName = `${el('docType').value}-${(el('docNumber').value || 'document').replace(/\s+/g, '-')}.pdf`;
-
-    const formData = new FormData();
-    formData.append('file', lastPdfBlob, fileName);
-    formData.append('docNumber', el('docNumber').value || 'document');
-    formData.append('docType', el('docType').value);
-
-    const res = await fetch(endpoint, { method: 'POST', body: formData });
-
-    const text = await res.text();
-    let data;
-    try {
-      data = JSON.parse(text);
-    } catch (e) {
-      console.error("Non-JSON response from server:", text);
-      throw new Error("Server returned invalid response. Check Netlify function endpoint.");
-    }
-
-    if (!res.ok || !data.url) {
-      throw new Error(data.error || "Upload failed");
-    }
-
-    el('generatedLink').value = data.url;
-    updatePreview();
-    alert('PDF uploaded successfully. Link generated.');
+    result = JSON.parse(rawText);
   } catch (err) {
-    console.error(err);
-    alert('Upload failed: ' + err.message);
+    console.error("Non-JSON response:", rawText);
+    throw new Error("Server returned invalid response. Check Netlify function endpoint.");
   }
+
+  if (!response.ok) {
+    console.error("Upload error response:", result);
+    throw new Error(result.error || result.message || "Upload failed");
+  }
+
+  if (!result.success || !result.url) {
+    console.error("Upload missing URL:", result);
+    throw new Error("Upload succeeded but no PDF URL was returned.");
+  }
+
+  return result;
 }
 
     function sendWhatsApp() {
